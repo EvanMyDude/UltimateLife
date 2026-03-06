@@ -945,16 +945,21 @@
         height: 320px;
       }
 
-      .synthesis-hub-badge--right {
-        display: none;
+      .synthesis-hub-box {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        padding: 12px;
       }
 
-      .synthesis-hub-title {
+      .synthesis-hub-badge {
+        position: static;
         font-size: 0.625rem;
         padding: 4px 10px;
       }
 
-      .synthesis-hub-badge {
+      .synthesis-hub-title {
         font-size: 0.625rem;
         padding: 4px 10px;
       }
@@ -1326,6 +1331,19 @@
       width: 100%;
       height: auto;
       aspect-ratio: 16 / 10;
+    }
+
+    @media (max-width: 768px) {
+      .final-cta-visual {
+        touch-action: auto;
+      }
+
+      .final-cta-visual spline-viewer {
+        pointer-events: none;
+        aspect-ratio: 16 / 12;
+        max-width: 90vw;
+        transform: scale(0.85);
+      }
     }
 
     .final-cta-text {
@@ -2324,23 +2342,34 @@
 
         card.style.transform = 'rotateX(' + rotate + 'deg) scale(' + scale + ') translateY(' + translateY + 'px)';
 
-        // Image fade/blur — starts at 20% progress, settles to subtle backdrop
-        var imageFadeProgress = Math.max(0, Math.min(1, (progress - 0.2) / 0.5));
-        var imageOpacity = 1 - imageFadeProgress * 0.85; // floors at ~0.15
-        var imageBlur = imageFadeProgress * 12;
-        image.style.opacity = imageOpacity;
-        image.style.filter = 'blur(' + imageBlur + 'px)';
+        if (isMobile) {
+          // On mobile, show header immediately and set image as faded backdrop
+          header.style.opacity = 1;
+          image.style.opacity = 0.15;
+          image.style.filter = 'blur(12px)';
+          if (logoGif) {
+            logoGif.style.opacity = 0;
+            logoGif.style.filter = 'blur(20px)';
+          }
+        } else {
+          // Image fade/blur — starts at 20% progress, settles to subtle backdrop
+          var imageFadeProgress = Math.max(0, Math.min(1, (progress - 0.2) / 0.5));
+          var imageOpacity = 1 - imageFadeProgress * 0.85; // floors at ~0.15
+          var imageBlur = imageFadeProgress * 12;
+          image.style.opacity = imageOpacity;
+          image.style.filter = 'blur(' + imageBlur + 'px)';
 
-        if (logoGif) {
-          // Logo fades out fully
-          var logoOpacity = 1 - imageFadeProgress;
-          logoGif.style.opacity = logoOpacity;
-          logoGif.style.filter = 'blur(' + (imageFadeProgress * 20) + 'px)';
+          if (logoGif) {
+            // Logo fades out fully
+            var logoOpacity = 1 - imageFadeProgress;
+            logoGif.style.opacity = logoOpacity;
+            logoGif.style.filter = 'blur(' + (imageFadeProgress * 20) + 'px)';
+          }
+
+          // Header reveal — starts at 15% progress, fully visible by 65%
+          var headerProgress = Math.max(0, Math.min(1, (progress - 0.15) / 0.5));
+          header.style.opacity = headerProgress;
         }
-
-        // Header reveal — starts at 15% progress, fully visible by 65%
-        var headerProgress = Math.max(0, Math.min(1, (progress - 0.15) / 0.5));
-        header.style.opacity = headerProgress;
 
         ticking = false;
       }
