@@ -559,6 +559,34 @@
       .problem-boxes-mask {
         display: none;
       }
+
+      .problem {
+        background:
+          repeating-linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.04) 0px,
+            rgba(255, 255, 255, 0.04) 1px,
+            transparent 1px,
+            transparent 64px
+          ),
+          repeating-linear-gradient(
+            0deg,
+            rgba(255, 255, 255, 0.04) 0px,
+            rgba(255, 255, 255, 0.04) 1px,
+            transparent 1px,
+            transparent 32px
+          ),
+          radial-gradient(
+            ellipse 60% 50% at 50% 50%,
+            rgba(75, 156, 255, 0.06) 0%,
+            transparent 70%
+          ),
+          radial-gradient(
+            ellipse 80% 70% at 50% 50%,
+            transparent 40%,
+            var(--bg-base) 100%
+          );
+      }
     }
 
     .problem-text {
