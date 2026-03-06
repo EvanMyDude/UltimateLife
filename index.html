@@ -1,0 +1,2566 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ultimate Life System — Turn Daily Noise Into Yearly Clarity</title>
+  <meta name="description"
+    content="A Notion-based operating system that compounds your daily inputs into weekly reviews, monthly plans, and an automatic Year in Review.">
+  <link rel="preconnect" href="https://rsms.me/">
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
+  <style>
+    /* ═══════════════════════════════════════════════════
+       DESIGN SYSTEM
+       ═══════════════════════════════════════════════════ */
+
+    :root {
+      /* Backgrounds */
+      --bg-base: #0A0A0A;
+      --bg-elevated: #111111;
+      --bg-card: #161616;
+      --bg-muted: #1A1A1A;
+
+      /* Text */
+      --text-primary: #EDEDED;
+      --text-secondary: #A0A0A8;
+      --text-muted: #666670;
+
+      /* Accent */
+      --accent: #4B9CFF;
+      --accent-glow: rgba(75, 156, 255, 0.3);
+      --accent-soft: rgba(75, 156, 255, 0.08);
+
+      /* Borders */
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --border-default: rgba(255, 255, 255, 0.10);
+      --border-hover: rgba(255, 255, 255, 0.18);
+
+      /* Spacing */
+      --section-padding: clamp(5rem, 10vw, 8rem);
+      --container-max: 1120px;
+      --container-px: clamp(1.5rem, 5vw, 4rem);
+
+      /* Radius */
+      --radius-card: 12px;
+      --radius-btn: 8px;
+    }
+
+    /* ═══ RESET ═══ */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', 'Inter var', system-ui, -apple-system, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-secondary);
+      font-size: clamp(1.0625rem, 1vw + 0.75rem, 1.25rem);
+      font-weight: 400;
+      letter-spacing: 0;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 256px 256px;
+    }
+
+    /* ═══ TYPOGRAPHY ═══ */
+    h1,
+    .h1 {
+      font-size: clamp(2.75rem, 5vw + 1rem, 4.5rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      color: var(--text-primary);
+    }
+
+    h2,
+    .h2 {
+      font-size: clamp(1.75rem, 3vw + 0.5rem, 2.5rem);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--text-primary);
+    }
+
+    .eyebrow {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      line-height: 1.4;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    /* ═══ LAYOUT ═══ */
+    .container {
+      max-width: var(--container-max);
+      margin: 0 auto;
+      padding-left: var(--container-px);
+      padding-right: var(--container-px);
+    }
+
+    section {
+      padding-top: var(--section-padding);
+      padding-bottom: var(--section-padding);
+    }
+
+    /* ═══ BUTTONS ═══ */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.875rem 2rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: var(--radius-btn);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 200ms ease-out;
+      border: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      position: relative;
+      background: var(--accent);
+      color: #fff;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.25) 45%,
+          rgba(255, 255, 255, 0.25) 55%,
+          transparent 70%);
+      transform: translateX(-100%);
+      animation: shimmer 3s ease-in-out infinite;
+      z-index: -1;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(75, 156, 255, 0.3);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text-primary);
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    @keyframes shimmer {
+      0% {
+        transform: translateX(-100%);
+      }
+
+      60% {
+        transform: translateX(100%);
+      }
+
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    /* ═══ SCROLL REVEAL ═══ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       1. HERO — CONTAINER SCROLL ANIMATION
+       ═══════════════════════════════════════════════════ */
+
+    .hero-scroll-container {
+      height: 45rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 0.5rem;
+      background: var(--bg-base);
+      overflow: visible;
+    }
+
+    .hero-scroll-inner {
+      padding: 2.5rem 0;
+      width: 100%;
+      position: relative;
+    }
+
+    .hero-scroll-header {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem var(--container-px);
+      opacity: 0;
+      z-index: 3;
+      will-change: opacity;
+    }
+
+    .hero-scroll-card {
+      max-width: 900px;
+      margin: 0 auto;
+      width: 100%;
+      height: 30rem;
+      border: 4px solid #6C6C6C;
+      padding: 0.5rem;
+      background: #222222;
+      border-radius: 30px;
+      box-shadow:
+        0 0 #0000004d,
+        0 9px 20px #0000004a,
+        0 37px 37px #00000042,
+        0 84px 50px #00000026,
+        0 149px 60px #0000000a,
+        0 233px 65px #00000003;
+      will-change: transform;
+    }
+
+    .hero-scroll-card-inner {
+      position: relative;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      border-radius: 16px;
+      background: var(--bg-base);
+    }
+
+    .hero-logo-overlay {
+      position: absolute;
+      top: 1.5%;
+      left: 1.8%;
+      width: 6%;
+      height: auto;
+      z-index: 2;
+      pointer-events: none;
+      border-radius: 8px;
+      will-change: opacity, filter;
+    }
+
+    .hero-scroll-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top left;
+      border-radius: 16px;
+      display: block;
+      will-change: opacity, filter;
+    }
+
+    #cybernetic-grid {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #cybernetic-grid canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .features:hover #cybernetic-grid {
+      pointer-events: auto;
+    }
+
+    @media (min-width: 769px) {
+      .hero-scroll-container {
+        height: 60rem;
+        padding: 5rem;
+      }
+
+      .hero-scroll-inner {
+        padding: 10rem 0;
+      }
+
+      .hero-scroll-card {
+        padding: 1.5rem;
+        height: 40rem;
+      }
+    }
+
+    .float-anim {
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-20px);
+      }
+
+      100% {
+        transform: translateY(0px);
+      }
+    }
+
+    .hero-scroll-header h1 {
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-sub {
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+      font-size: clamp(1.0625rem, 1.2vw + 0.6rem, 1.25rem);
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      animation: bounce 2s ease-in-out infinite;
+      opacity: 0.4;
+      z-index: 1;
+    }
+
+    .scroll-indicator svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--text-muted);
+      stroke-width: 2;
+      fill: none;
+    }
+
+    @keyframes bounce {
+
+      0%,
+      100% {
+        transform: translateX(-50%) translateY(0);
+        opacity: 0.4;
+      }
+
+      50% {
+        transform: translateX(-50%) translateY(8px);
+        opacity: 0.7;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       2. SOCIAL PROOF
+       ═══════════════════════════════════════════════════ */
+
+    .social-proof {
+      padding-top: 2.5rem;
+      padding-bottom: 2.5rem;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .social-proof-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+    }
+
+    .ph-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .ph-badge svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .social-divider {
+      width: 1px;
+      height: 24px;
+      background: var(--border-subtle);
+    }
+
+    .social-quote {
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+      font-style: italic;
+      max-width: 360px;
+    }
+
+    .social-stars {
+      display: flex;
+      gap: 2px;
+      color: #F5A623;
+      font-size: 0.875rem;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       3. THE PROBLEM
+       ═══════════════════════════════════════════════════ */
+
+    .problem {
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .problem > .container {
+      position: relative;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .problem-boxes {
+      position: absolute;
+      left: 25%;
+      top: -25%;
+      z-index: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      transform: translate(-40%, -60%) skewX(-48deg) skewY(14deg) scale(0.675);
+    }
+
+    .problem-boxes-grid {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+    }
+
+    .problem-box-col {
+      width: 64px;
+      border-left: 1px solid var(--border-subtle);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .problem-box {
+      width: 64px;
+      height: 32px;
+      border-right: 1px solid var(--border-subtle);
+      border-top: 1px solid var(--border-subtle);
+      transition: background-color 1.5s ease-out;
+      position: relative;
+    }
+
+    .problem-box.has-plus::after {
+      content: '+';
+      position: absolute;
+      bottom: -4px;
+      right: -4px;
+      font-size: 8px;
+      color: rgba(255, 255, 255, 0.08);
+      pointer-events: none;
+    }
+
+    .problem-box.lit {
+      transition: background-color 0.15s ease-in;
+    }
+
+    .problem-boxes-mask {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background: radial-gradient(ellipse 50% 60% at 50% 50%, transparent 0%, var(--bg-base) 100%);
+    }
+
+    @media (max-width: 768px) {
+      .problem-boxes,
+      .problem-boxes-mask {
+        display: none;
+      }
+    }
+
+    .problem-text {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .problem-text p {
+      margin-bottom: 2rem;
+      font-size: clamp(1.0625rem, 1.2vw + 0.6rem, 1.25rem);
+      line-height: 1.7;
+    }
+
+    .problem-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       4. THE SYNTHESIS FLOW
+       ═══════════════════════════════════════════════════ */
+
+    .synthesis {
+      background: var(--bg-elevated);
+    }
+
+    .synthesis-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .synthesis-header .eyebrow {
+      margin-bottom: 1rem;
+    }
+
+    .synthesis-header h2 {
+      margin-bottom: 1.25rem;
+    }
+
+    .synthesis-intro {
+      max-width: 640px;
+      margin: 0 auto;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .timeline {
+      position: relative;
+      max-width: 720px;
+      margin: 0 auto;
+      padding-left: 3rem;
+    }
+
+    /* The vertical timeline line */
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom,
+          var(--accent) 0%,
+          rgba(75, 156, 255, 0.3) 50%,
+          var(--border-subtle) 100%);
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 3rem;
+    }
+
+    .timeline-item:last-child {
+      padding-bottom: 0;
+    }
+
+    /* Glowing node */
+    .timeline-node {
+      position: absolute;
+      left: -3rem;
+      top: 0.25rem;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timeline-node::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent-glow), 0 0 24px rgba(75, 156, 255, 0.15);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 12px var(--accent-glow), 0 0 24px rgba(75, 156, 255, 0.15);
+      }
+
+      50% {
+        box-shadow: 0 0 18px var(--accent-glow), 0 0 36px rgba(75, 156, 255, 0.25);
+      }
+    }
+
+    .timeline-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 1.75rem;
+      transition: border-color 200ms ease-out;
+    }
+
+    .timeline-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .timeline-card .eyebrow {
+      margin-bottom: 0.625rem;
+    }
+
+    .timeline-card p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .synthesis-payoff {
+      text-align: center;
+      margin-top: 4rem;
+      max-width: 640px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: clamp(1.125rem, 1.5vw + 0.5rem, 1.3125rem);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    /* ═══ SYNTHESIS VISUALIZATION ═══ */
+
+    .synthesis-viz {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 540px;
+      height: 380px;
+      margin: 4rem auto 0;
+    }
+
+    .synthesis-viz svg.synthesis-paths {
+      width: 100%;
+      height: 100%;
+      color: var(--border-default);
+    }
+
+    /* Top badge pills */
+    .synthesis-viz svg .viz-badge-bg {
+      fill: var(--bg-card);
+      stroke: var(--border-subtle);
+      stroke-width: 0.4;
+    }
+
+    .synthesis-viz svg .viz-badge-text {
+      fill: var(--text-secondary);
+      font-size: 5px;
+      font-weight: 600;
+      font-family: 'Inter', system-ui, sans-serif;
+      letter-spacing: 0.03em;
+    }
+
+    .synthesis-viz svg .viz-badge-icon {
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 0.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .synthesis-viz svg .viz-badge-icon-fill {
+      fill: var(--accent);
+      stroke: none;
+    }
+
+    /* SVG path draw-in animation */
+    .synthesis-viz svg .viz-paths-group {
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 0.4;
+      stroke-dasharray: 100 100;
+    }
+
+    .synthesis-viz svg .viz-paths-group {
+      animation: viz-draw-in 1s cubic-bezier(0.25, 0.1, 0.5, 1) forwards;
+    }
+
+    @keyframes viz-draw-in {
+      from {
+        stroke-dashoffset: 100;
+      }
+
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    /* Light trail orbs */
+    .viz-orb {
+      offset-anchor: 10px 0px;
+      animation: viz-orb-travel 4s cubic-bezier(0, 0, 0.2, 1) infinite;
+      animation-delay: 1s;
+    }
+
+    .viz-orb-1 {
+      offset-path: path("M 31 12 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 25");
+    }
+
+    .viz-orb-2 {
+      offset-path: path("M 77 12 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 25");
+    }
+
+    .viz-orb-3 {
+      offset-path: path("M 124 12 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 25");
+    }
+
+    .viz-orb-4 {
+      offset-path: path("M 170 12 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 25");
+    }
+
+    @keyframes viz-orb-travel {
+      0% {
+        offset-distance: 0%;
+      }
+
+      100% {
+        offset-distance: 100%;
+      }
+    }
+
+    /* Central hub box */
+    .synthesis-hub {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 88%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .synthesis-hub-shadow {
+      position: absolute;
+      bottom: -16px;
+      width: 62%;
+      height: 100px;
+      border-radius: 12px;
+      background: var(--accent-soft);
+    }
+
+    .synthesis-hub-title {
+      position: absolute;
+      top: -14px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+    }
+
+    .synthesis-hub-title svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .synthesis-hub-circle {
+      position: absolute;
+      bottom: -32px;
+      z-index: 30;
+      width: 74px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      font-weight: 600;
+      font-size: 0.6875rem;
+      letter-spacing: 0.02em;
+      color: var(--text-primary);
+      box-shadow: 0 0 16px rgba(75, 156, 255, 0.12), 0 0 40px rgba(75, 156, 255, 0.06);
+    }
+
+    .synthesis-hub-box {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 150px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      border-bottom-color: rgba(75, 156, 255, 0.15);
+      background: var(--bg-base);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(75, 156, 255, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Floating badges inside hub */
+    .synthesis-hub-badge {
+      position: absolute;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .synthesis-hub-badge svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--accent);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
+    .synthesis-hub-badge--left {
+      bottom: 28px;
+      left: 24px;
+    }
+
+    .synthesis-hub-badge--right {
+      top: 28px;
+      right: 24px;
+    }
+
+    /* Pulsing concentric ripple circles */
+    .synthesis-ripple {
+      position: absolute;
+      border-radius: 50%;
+      border-top: 1px solid var(--border-subtle);
+      background: var(--accent-soft);
+    }
+
+    .synthesis-ripple--1 {
+      width: 100px;
+      height: 100px;
+      bottom: -56px;
+      animation: viz-ripple 2.5s ease-in-out infinite;
+    }
+
+    .synthesis-ripple--2 {
+      width: 145px;
+      height: 145px;
+      bottom: -80px;
+      animation: viz-ripple 2.5s ease-in-out 0.3s infinite;
+    }
+
+    .synthesis-ripple--3 {
+      width: 190px;
+      height: 190px;
+      bottom: -100px;
+      animation: viz-ripple 2.5s ease-in-out 0.6s infinite;
+    }
+
+    .synthesis-ripple--4 {
+      width: 235px;
+      height: 235px;
+      bottom: -120px;
+      animation: viz-ripple 2.5s ease-in-out 0.9s infinite;
+    }
+
+    @keyframes viz-ripple {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.03);
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .synthesis-viz {
+        max-width: 100%;
+        height: 320px;
+      }
+
+      .synthesis-hub-badge--right {
+        display: none;
+      }
+
+      .synthesis-hub-title {
+        font-size: 0.625rem;
+        padding: 4px 10px;
+      }
+
+      .synthesis-hub-badge {
+        font-size: 0.625rem;
+        padding: 4px 10px;
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       5. FEATURES
+       ═══════════════════════════════════════════════════ */
+
+    .features {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .features>.container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 2rem;
+      transition: transform 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .feature-card h3 {
+      color: var(--text-primary);
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+
+    .feature-card p {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    .feature-card--wide {
+      grid-column: 1 / -1;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       6. STATS
+       ═══════════════════════════════════════════════════ */
+
+    .stats {
+      padding-top: var(--section-padding);
+      padding-bottom: var(--section-padding);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      text-align: center;
+    }
+
+    .stat-item {
+      padding: 2rem 1rem;
+      position: relative;
+    }
+
+    .stat-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 1px;
+      height: 60%;
+      background: var(--border-subtle);
+    }
+
+    .stat-number {
+      font-size: clamp(3rem, 6vw, 5rem);
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      max-width: 260px;
+      margin: 0 auto;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       7. TESTIMONIALS
+       ═══════════════════════════════════════════════════ */
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    .testimonial-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 1.75rem;
+      transition: border-color 200ms ease-out;
+    }
+
+    .testimonial-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .testimonial-quote {
+      font-size: 0.9375rem;
+      line-height: 1.65;
+      color: var(--text-secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    .testimonial-quote strong {
+      color: var(--text-primary);
+    }
+
+    .testimonial-author {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       8. PRICING
+       ═══════════════════════════════════════════════════ */
+
+    .pricing {
+      text-align: center;
+      position: relative;
+    }
+
+    .pricing h2 {
+      margin-bottom: 2.5rem;
+    }
+
+    .pricing-card-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    /* Shine border effect */
+    .pricing-card-wrapper::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: calc(var(--radius-card) + 1px);
+      background: conic-gradient(from var(--shine-angle, 0deg),
+          transparent 0%,
+          var(--accent) 10%,
+          transparent 20%,
+          transparent 100%);
+      animation: shine-rotate 4s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes shine-rotate {
+      to {
+        --shine-angle: 360deg;
+      }
+    }
+
+    @property --shine-angle {
+      syntax: '<angle>';
+      initial-value: 0deg;
+      inherits: false;
+    }
+
+    .pricing-card {
+      position: relative;
+      z-index: 1;
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      padding: 2.5rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .pricing-glow {
+      position: absolute;
+      inset: -80px;
+      background: radial-gradient(circle, rgba(75, 156, 255, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .price-old {
+      font-size: 1rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+      margin-bottom: 0.25rem;
+    }
+
+    .price-current {
+      font-size: clamp(2.5rem, 4vw, 3.5rem);
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .pricing-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 2rem;
+    }
+
+    .pricing-features li {
+      padding: 0.5rem 0;
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .pricing-features li::before {
+      content: '';
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      margin-top: 3px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%234B9CFF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+
+    .pricing-subtext {
+      margin-top: 2rem;
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .pricing-subtext p {
+      font-size: 0.9375rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       9. FAQ
+       ═══════════════════════════════════════════════════ */
+
+    .faq {
+      padding-top: var(--section-padding);
+      padding-bottom: var(--section-padding);
+    }
+
+    .faq-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .faq-list {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 1.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      text-align: left;
+      gap: 1rem;
+    }
+
+    .faq-question:hover {
+      color: var(--accent);
+    }
+
+    .faq-icon {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: transform 300ms ease;
+      font-size: 1.25rem;
+      font-weight: 300;
+    }
+
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 400ms ease, opacity 300ms ease;
+      opacity: 0;
+    }
+
+    .faq-item.open .faq-answer {
+      opacity: 1;
+    }
+
+    .faq-answer-inner {
+      padding-bottom: 1.5rem;
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       10. FINAL CTA
+       ═══════════════════════════════════════════════════ */
+
+    .final-cta {
+      text-align: center;
+      position: relative;
+      padding-top: clamp(6rem, 12vw, 10rem);
+      padding-bottom: clamp(6rem, 12vw, 10rem);
+      background:
+        radial-gradient(ellipse at 50% 100%, rgba(75, 156, 255, 0.06) 0%, transparent 60%),
+        var(--bg-base);
+    }
+
+    .final-cta-visual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      max-width: var(--container-max);
+      margin: 4rem auto 0 auto;
+      z-index: 1;
+    }
+
+    .final-cta-visual spline-viewer {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 10;
+    }
+
+    .final-cta-text {
+      max-width: 640px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .final-cta-text p {
+      color: var(--text-primary);
+      font-size: clamp(1.0625rem, 1.2vw + 0.6rem, 1.25rem);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .final-cta-text p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════ */
+
+    .footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 2rem 0;
+    }
+
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .footer-logo img {
+      height: 2em;
+      opacity: 0.9;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .footer-links a {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 200ms ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-secondary);
+    }
+
+    /* ═══════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════ */
+
+    @media (max-width: 768px) {
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .testimonials-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-item:not(:last-child)::after {
+        width: 60%;
+        height: 1px;
+        right: auto;
+        left: 50%;
+        top: auto;
+        bottom: 0;
+        transform: translateX(-50%);
+      }
+
+      .social-proof-inner {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .social-divider {
+        width: 60px;
+        height: 1px;
+      }
+
+      .feature-card--wide {
+        grid-column: auto;
+      }
+
+      .timeline {
+        padding-left: 2.5rem;
+      }
+
+      .timeline-node {
+        left: -2.5rem;
+      }
+
+      .timeline::before {
+        left: 8px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-scroll-header h1 {
+        font-size: clamp(2rem, 8vw, 2.75rem);
+      }
+
+      .hero-ctas {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .pricing-card {
+        padding: 1.75rem;
+      }
+
+      .stat-number {
+        font-size: clamp(2.25rem, 10vw, 3rem);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       TUBELIGHT NAVBAR
+       ═══════════════════════════════════════════════════ */
+
+    section[id] {
+      scroll-margin-top: 80px;
+    }
+
+    .tubelight-nav {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9998;
+      padding-top: 16px;
+      pointer-events: none;
+    }
+
+    .tubelight-nav-inner {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 9999px;
+      background: rgba(17, 17, 17, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      position: relative;
+      pointer-events: auto;
+    }
+
+    #tubelight-indicator {
+      position: absolute;
+      top: 4px;
+      left: 0;
+      height: calc(100% - 8px);
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.06);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                  width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+
+    #tubelight-indicator::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 2px;
+      border-radius: 0 0 4px 4px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow),
+                  0 0 20px var(--accent-glow),
+                  0 0 40px rgba(75, 156, 255, 0.15);
+    }
+
+    .tubelight-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      border-radius: 9999px;
+      color: var(--text-secondary);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+      position: relative;
+      z-index: 1;
+      transition: color 0.25s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tubelight-item:hover {
+      color: var(--text-primary);
+    }
+
+    .tubelight-item.active {
+      color: var(--text-primary);
+    }
+
+    .tubelight-item svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .tubelight-nav {
+        padding-top: 10px;
+      }
+
+      .tubelight-item {
+        padding: 8px 12px;
+      }
+
+      .tubelight-item span {
+        display: none;
+      }
+
+      .tubelight-item {
+        gap: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════════════
+       TUBELIGHT NAVBAR
+       ═══════════════════════════════════════════════════ -->
+  <nav class="tubelight-nav" id="tubelight-nav">
+    <div class="tubelight-nav-inner">
+      <div id="tubelight-indicator"></div>
+      <a href="#hero-scroll" class="tubelight-item active" data-section="hero-scroll">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+      </a>
+      <a href="#synthesis" class="tubelight-item" data-section="synthesis">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span>How It Works</span>
+      </a>
+      <a href="#features" class="tubelight-item" data-section="features">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        <span>Features</span>
+      </a>
+      <a href="#testimonials" class="tubelight-item" data-section="testimonials">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Testimonials</span>
+      </a>
+      <a href="#pricing" class="tubelight-item" data-section="pricing">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <span>Pricing</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════
+       1. HERO
+       ═══════════════════════════════════════════════════ -->
+  <section class="hero-scroll-container" id="hero-scroll">
+    <div class="hero-scroll-inner" style="perspective: 1000px;">
+      <div class="hero-scroll-card" id="hero-card">
+        <div class="hero-scroll-card-inner">
+          <img src="ULSHome.png" alt="Ultimate Life System" class="hero-scroll-image" id="hero-image"
+            draggable="false" />
+          <img src="UltimateLifeLogo.gif" alt="" id="hero-logo-gif" class="hero-logo-overlay" draggable="false" />
+          <div class="hero-scroll-header" id="hero-header">
+            <h1>Turn daily noise into yearly clarity.</h1>
+            <p class="hero-sub">A Notion-based operating system that compounds your daily inputs into weekly reviews,
+              monthly plans, and an automatic Year in Review.</p>
+            <div class="hero-ctas">
+              <a href="#pricing" class="btn btn-primary">Start Building Clarity</a>
+              <a href="https://focusfuel.notion.site/Ultimate-Life-Demo-2206b2c57649809da100f44e3aa9bf9a" target="_blank" class="btn btn-ghost">See How It Works</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <svg viewBox="0 0 24 24">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       2. SOCIAL PROOF
+       ═══════════════════════════════════════════════════ -->
+  <div class="social-proof">
+    <div class="container">
+      <div class="social-proof-inner reveal">
+        <a href="https://www.producthunt.com/products/ultimate-life-system-ai-notion-template?embed=true&utm_source=badge-featured&utm_medium=badge&utm_souce=badge-ultimate-life-system-ai-notion-template&launch=ultimate-life-system-ai-notion-template" target="_blank" class="ph-badge" style="text-decoration: none; color: inherit;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path
+              d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+          </svg>
+          <span>Featured on Product Hunt</span>
+        </a>
+        <div class="social-divider"></div>
+        <p class="social-quote">"It actually made me stick with journaling for the first time."</p>
+        <div class="social-divider"></div>
+        <div class="social-stars">
+          <span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span><span>&#9733;</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════
+       3. THE PROBLEM
+       ═══════════════════════════════════════════════════ -->
+  <section class="problem" id="problem">
+    <div class="problem-boxes" id="problem-boxes" aria-hidden="true">
+      <div class="problem-boxes-grid" id="problem-boxes-grid"></div>
+    </div>
+    <div class="problem-boxes-mask"></div>
+    <div class="container">
+      <div class="problem-text">
+        <p class="reveal">You had an insight on Tuesday. By Friday it was gone.</p>
+        <p class="reveal">You have tried journals, apps, dashboards. They all go quiet by week three. Not because you
+          lack discipline — because nothing connects.</p>
+        <p class="reveal">Weeks blur together. Months pass without a single documented lesson. Another year ends and you
+          cannot name your three biggest breakthroughs.</p>
+        <p class="reveal">The cost is not dramatic. It is quiet. It is the patterns you never saw because nothing was
+          keeping track.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       4. THE SYNTHESIS FLOW
+       ═══════════════════════════════════════════════════ -->
+  <section class="synthesis" id="synthesis">
+    <div class="container">
+      <div class="synthesis-header">
+        <p class="eyebrow reveal">How It Works</p>
+        <h2 class="reveal">The Synthesis Flow</h2>
+        <p class="synthesis-intro reveal">Most systems collect. This one compounds.<br><br>Log one gratitude, one
+          lesson, one moment — 30 seconds at the bottom of your Day Page. Each entry dates itself and flows into the
+          system automatically.</p>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item reveal">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <p class="eyebrow">Daily (30 seconds)</p>
+            <p>Capture what mattered. Three buttons. Done.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <p class="eyebrow">Weekly</p>
+            <p>The system compiles your entries into a reflection view. Pick your top lesson. Answer prompts like "Where
+              did I fall short?" and "What surprised me most?"</p>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <p class="eyebrow">Monthly</p>
+            <p>Weekly lessons aggregate into a Monthly Battle Plan. Patterns surface. Strategy forms.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item reveal">
+          <div class="timeline-node"></div>
+          <div class="timeline-card">
+            <p class="eyebrow">Yearly</p>
+            <p>An automatic Year in Review — built entirely from what you already entered. Top lessons, highlights, and
+              moments from every month. One page.</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="synthesis-payoff reveal">You did not do extra work. You just showed up daily. The system kept the rest.
+      </p>
+
+      <!-- Synthesis Flow Visualization -->
+      <div class="synthesis-viz reveal">
+        <!-- SVG Paths & Badges -->
+        <svg class="synthesis-paths" width="100%" height="100%" viewBox="0 0 200 100"
+          preserveAspectRatio="xMidYMin meet">
+          <!-- Path lines -->
+          <g class="viz-paths-group" stroke-dasharray="100 100" pathLength="100">
+            <path d="M 31 12 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 10" />
+            <path d="M 77 12 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 10" />
+            <path d="M 124 12 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 10" />
+            <path d="M 170 12 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 10" />
+            <animate attributeName="stroke-dashoffset" from="100" to="0" dur="1s" fill="freeze" calcMode="spline"
+              keySplines="0.25,0.1,0.5,1" keyTimes="0; 1" />
+          </g>
+
+          <!-- Light trail orbs -->
+          <g mask="url(#viz-mask-1)">
+            <circle class="viz-orb viz-orb-1" cx="0" cy="0" r="12" fill="url(#viz-blue-grad)" />
+          </g>
+          <g mask="url(#viz-mask-2)">
+            <circle class="viz-orb viz-orb-2" cx="0" cy="0" r="12" fill="url(#viz-blue-grad)" />
+          </g>
+          <g mask="url(#viz-mask-3)">
+            <circle class="viz-orb viz-orb-3" cx="0" cy="0" r="12" fill="url(#viz-blue-grad)" />
+          </g>
+          <g mask="url(#viz-mask-4)">
+            <circle class="viz-orb viz-orb-4" cx="0" cy="0" r="12" fill="url(#viz-blue-grad)" />
+          </g>
+
+          <!-- Top badge pills -->
+          <g stroke="none">
+            <!-- Badge 1: Days -->
+            <g>
+              <rect class="viz-badge-bg" x="12" y="4" width="38" height="13" rx="6.5" />
+              <!-- Circle icon -->
+              <circle class="viz-badge-icon-fill" cx="22" cy="10.5" r="1.5" />
+              <text class="viz-badge-text" x="28" y="12.5">Days</text>
+            </g>
+            <!-- Badge 2: Weeks -->
+            <g>
+              <rect class="viz-badge-bg" x="58" y="4" width="38" height="13" rx="6.5" />
+              <!-- List icon (3 lines, 65% size) -->
+              <g class="viz-badge-icon">
+                <line x1="68" y1="8.5" x2="72" y2="8.5" />
+                <line x1="68" y1="10.5" x2="72" y2="10.5" />
+                <line x1="68" y1="12.5" x2="72" y2="12.5" />
+              </g>
+              <text class="viz-badge-text" x="75" y="12.5">Weeks</text>
+            </g>
+            <!-- Badge 3: Months -->
+            <g>
+              <rect class="viz-badge-bg" x="105" y="4" width="42" height="13" rx="6.5" />
+              <!-- Grid icon (2x2 squares, 65% size) -->
+              <g class="viz-badge-icon">
+                <rect x="115" y="8" width="1.6" height="1.6" rx="0.3" />
+                <rect x="117.4" y="8" width="1.6" height="1.6" rx="0.3" />
+                <rect x="115" y="10.4" width="1.6" height="1.6" rx="0.3" />
+                <rect x="117.4" y="10.4" width="1.6" height="1.6" rx="0.3" />
+              </g>
+              <text class="viz-badge-text" x="122" y="12.5">Months</text>
+            </g>
+            <!-- Badge 4: Quarters -->
+            <g>
+              <rect class="viz-badge-bg" x="150" y="4" width="44" height="13" rx="6.5" />
+              <!-- Arrow-up-right icon (65% size) -->
+              <g class="viz-badge-icon">
+                <line x1="160" y1="12.5" x2="164" y2="8" />
+                <polyline points="161.5,8 164,8 164,10.5" />
+              </g>
+              <text class="viz-badge-text" x="167" y="12.5">Quarters</text>
+            </g>
+          </g>
+
+          <!-- Defs: masks and gradients -->
+          <defs>
+            <mask id="viz-mask-1">
+              <path d="M 31 12 v 15 q 0 5 5 5 h 59 q 5 0 5 5 v 25" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
+            <mask id="viz-mask-2">
+              <path d="M 77 12 v 10 q 0 5 5 5 h 13 q 5 0 5 5 v 25" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
+            <mask id="viz-mask-3">
+              <path d="M 124 12 v 10 q 0 5 -5 5 h -14 q -5 0 -5 5 v 25" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
+            <mask id="viz-mask-4">
+              <path d="M 170 12 v 15 q 0 5 -5 5 h -60 q -5 0 -5 5 v 25" strokeWidth="0.5" stroke="white" fill="none" />
+            </mask>
+            <radialGradient id="viz-blue-grad" fx="1">
+              <stop offset="0%" stop-color="#4B9CFF" />
+              <stop offset="100%" stop-color="transparent" />
+            </radialGradient>
+          </defs>
+        </svg>
+
+        <!-- Central Hub -->
+        <div class="synthesis-hub">
+          <!-- Shadow beneath -->
+          <div class="synthesis-hub-shadow"></div>
+
+          <!-- Title pill -->
+          <div class="synthesis-hub-title">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3l1.5 4.5H18l-3.5 2.8 1.3 4.2L12 12l-3.8 2.5 1.3-4.2L6 7.5h4.5z" />
+            </svg>
+            <span>Year in Review</span>
+          </div>
+
+          <!-- Hub content box -->
+          <div class="synthesis-hub-box">
+            <!-- Floating badges -->
+            <div class="synthesis-hub-badge synthesis-hub-badge--left">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M9 18h6M10 22h4M12 2a7 7 0 0 1 4 12.7V17a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-2.3A7 7 0 0 1 12 2z" />
+              </svg>
+              <span>Best Lessons</span>
+            </div>
+            <div class="synthesis-hub-badge synthesis-hub-badge--right">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21.3l7.8-7.8 1-1.1a5.5 5.5 0 0 0 0-7.8z" />
+              </svg>
+              <span>Favorite Moments</span>
+            </div>
+
+            <!-- Pulsing ripple circles -->
+            <div class="synthesis-ripple synthesis-ripple--1"></div>
+            <div class="synthesis-ripple synthesis-ripple--2"></div>
+            <div class="synthesis-ripple synthesis-ripple--3"></div>
+            <div class="synthesis-ripple synthesis-ripple--4"></div>
+          </div>
+
+          <!-- Bottom circle -->
+          <div class="synthesis-hub-circle">Top Insights</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       5. FEATURES
+       ═══════════════════════════════════════════════════ -->
+  <section class="features" id="features">
+    <div id="cybernetic-grid" aria-hidden="true"></div>
+    <div class="container">
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <h3>Daily Clarity in 30 Seconds</h3>
+          <p>Gratitude, priorities, and habits — captured with buttons on your Day Page. No blank pages. No friction.
+          </p>
+        </div>
+
+        <div class="feature-card reveal">
+          <h3>Goals That Connect to Projects</h3>
+          <p>Set objectives, break them into projects, and track progress in one view. Goals stay visible where your
+            work happens.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <h3>A Financial Picture You Actually Use</h3>
+          <p>A budget builder inside the same system where you plan your life. Spending decisions meet life priorities.
+          </p>
+        </div>
+
+        <div class="feature-card reveal">
+          <h3>Vision and Direction</h3>
+          <p>25 AI-guided questions to clarify your values. A bucket list for the ambitions that follow.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <h3>101 AI Tools + 50 Book Summaries</h3>
+          <p>A curated library built into your workspace. Vetted resources without the research.</p>
+        </div>
+
+        <div class="feature-card reveal">
+          <h3>Body and Movement</h3>
+          <p>Workouts and posture guidance. Your body gets a section — not an afterthought.</p>
+        </div>
+
+        <div class="feature-card feature-card--wide reveal">
+          <h3>Travel Without the Chaos</h3>
+          <p>Trips planned inside your life system. Connected to your bucket list and budget.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       6. STATS
+       ═══════════════════════════════════════════════════ -->
+  <section class="stats" id="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item reveal">
+          <div class="stat-number" data-target="1095">0</div>
+          <p class="stat-label">Three inputs a day. A year of clarity by December.</p>
+        </div>
+
+        <div class="stat-item reveal">
+          <div class="stat-number" data-target="101">0</div>
+          <p class="stat-label">AI tools, already vetted. Skip the research.</p>
+        </div>
+
+        <div class="stat-item reveal">
+          <div class="stat-number" data-target="50">0</div>
+          <p class="stat-label">Books distilled into actionable notes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       7. TESTIMONIALS
+       ═══════════════════════════════════════════════════ -->
+  <section class="testimonials" id="testimonials">
+    <div class="container">
+      <div class="reveal">
+        <script src="https://widget.senja.io/widget/09e64877-0685-43ae-8a82-5b84a162e52b/platform.js" type="text/javascript" async></script>
+        <div class="senja-embed" data-id="09e64877-0685-43ae-8a82-5b84a162e52b" data-mode="shadow" data-lazyload="false" style="display: block; width: 100%;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       8. PRICING
+       ═══════════════════════════════════════════════════ -->
+  <section class="pricing" id="pricing">
+    <div class="container">
+      <h2 class="reveal">One price. Lifetime access.</h2>
+
+      <div class="pricing-card-wrapper reveal">
+        <div class="pricing-glow"></div>
+        <div class="pricing-card">
+          <p class="price-old">$50</p>
+          <p class="price-current">$12.39</p>
+          <ul class="pricing-features">
+            <li>The complete system — daily journal to Year in Review</li>
+            <li>Setup guide included — running in under 2 minutes</li>
+            <li>Every future update, free. One payment. Done.</li>
+          </ul>
+          <a href="https://gumroad.com/checkout?product=ogblat&quantity=1" target="_blank" class="btn btn-primary" style="width: 100%;">Get Lifetime Access — $12.39</a>
+        </div>
+      </div>
+
+      <div class="pricing-subtext reveal">
+        <p>Less than two coffees for a system you will use every day this year.</p>
+        <p>One payment. No subscription. Less than a month of any productivity app you have already forgotten about.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       9. FAQ
+       ═══════════════════════════════════════════════════ -->
+  <section class="faq" id="faq">
+    <div class="container">
+      <h2 class="faq-header reveal">Questions</h2>
+
+      <div class="faq-list">
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            <span>How do I get started?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">Duplicate the template into your Notion workspace. Follow the included setup
+              guide. You will be running in under two minutes.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            <span>Do I need to pay for Notion?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">No. The free Notion plan works.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            <span>What if I already have a Notion setup?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">The system works alongside your existing pages. No conflicts.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            <span>Is this a subscription?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">No. One payment. Lifetime access. Every future update included.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal">
+          <button class="faq-question">
+            <span>What makes this different from other Notion templates?</span>
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">The Synthesis Flow. Most templates are static pages you fill in once. This one
+              compounds — your daily entries automatically build into weekly reflections, monthly plans, and a complete
+              Year in Review. Nothing else connects your inputs across time.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       10. FINAL CTA
+       ═══════════════════════════════════════════════════ -->
+  <section class="final-cta" id="final-cta">
+    <div class="container">
+      <div class="final-cta-text">
+        <p class="reveal">Imagine December. You open one page and see your year. The lessons that changed how you think.
+          The moments you would have forgotten. The goals you actually finished.</p>
+        <p class="reveal">You showed up for 30 seconds a day. The system kept the rest.</p>
+      </div>
+      <div class="reveal">
+        <a href="https://gumroad.com/checkout?product=ogblat&quantity=1" target="_blank" class="btn btn-primary">Start Your Year Today</a>
+      </div>
+      <div class="final-cta-visual float-anim reveal">
+        <script type="module" src="https://unpkg.com/@splinetool/viewer@1.12.67/build/spline-viewer.js"></script>
+        <spline-viewer url="https://prod.spline.design/cQzs1shHlqyNc0hQ/scene.splinecode"></spline-viewer>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-logo">
+          <img src="WhiteNotionLogo.png" alt="Notion">Ultimate Life System
+        </div>
+        <nav class="footer-links">
+          <a href="#pricing">Pricing</a>
+          <a href="#synthesis">How It Works</a>
+          <a href="mailto:notionfuel@gmail.com" onclick="if(!confirm('Are you sure you want to send an email to notionfuel@gmail.com?')){event.preventDefault();}">Contact</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════
+       TUBELIGHT NAV SCRIPT
+       ═══════════════════════════════════════════════════ -->
+  <script>
+    (function () {
+      'use strict';
+
+      var indicator = document.getElementById('tubelight-indicator');
+      var navInner = document.querySelector('.tubelight-nav-inner');
+      var navItems = document.querySelectorAll('.tubelight-item');
+      var sectionIds = [];
+      navItems.forEach(function (item) {
+        sectionIds.push(item.getAttribute('data-section'));
+      });
+
+      function moveIndicator(activeItem) {
+        if (!activeItem || !indicator) return;
+        var navRect = navInner.getBoundingClientRect();
+        var itemRect = activeItem.getBoundingClientRect();
+        var offset = itemRect.left - navRect.left;
+        indicator.style.width = itemRect.width + 'px';
+        indicator.style.transform = 'translateX(' + offset + 'px)';
+      }
+
+      function setActive(sectionId) {
+        navItems.forEach(function (item) {
+          if (item.getAttribute('data-section') === sectionId) {
+            item.classList.add('active');
+            moveIndicator(item);
+          } else {
+            item.classList.remove('active');
+          }
+        });
+      }
+
+      // Initial indicator position
+      var initialActive = document.querySelector('.tubelight-item.active');
+      if (initialActive) {
+        // Wait for layout
+        requestAnimationFrame(function () {
+          moveIndicator(initialActive);
+        });
+      }
+
+      // Click handlers
+      navItems.forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          e.preventDefault();
+          var sectionId = item.getAttribute('data-section');
+          var target = document.getElementById(sectionId);
+          if (target) {
+            setActive(sectionId);
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
+
+      // Scroll spy via IntersectionObserver
+      var observerOptions = {
+        rootMargin: '-80px 0px -50% 0px',
+        threshold: 0
+      };
+
+      var scrollObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var id = entry.target.id;
+            if (sectionIds.indexOf(id) !== -1) {
+              setActive(id);
+            }
+          }
+        });
+      }, observerOptions);
+
+      sectionIds.forEach(function (id) {
+        var section = document.getElementById(id);
+        if (section) {
+          scrollObserver.observe(section);
+        }
+      });
+
+      // Reposition indicator on resize
+      window.addEventListener('resize', function () {
+        var current = document.querySelector('.tubelight-item.active');
+        if (current) moveIndicator(current);
+      });
+    })();
+  </script>
+
+  <!-- ═══════════════════════════════════════════════════
+       SCRIPTS
+       ═══════════════════════════════════════════════════ -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* ─── Scroll Reveal ─── */
+      const revealElements = document.querySelectorAll('.reveal');
+      const revealObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            // Stagger children within the same parent
+            const parent = entry.target.parentElement;
+            const siblings = Array.from(parent.querySelectorAll(':scope > .reveal'));
+            const index = siblings.indexOf(entry.target);
+            const delay = index * 80;
+
+            entry.target.style.transitionDelay = delay + 'ms';
+            entry.target.classList.add('visible');
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+
+      revealElements.forEach(function (el) {
+        revealObserver.observe(el);
+      });
+
+      /* ─── Stats Counter ─── */
+      const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+      let statsCounted = false;
+
+      function easeOutQuad(t) {
+        return t * (2 - t);
+      }
+
+      function animateCounter(el, target, duration) {
+        var start = performance.now();
+        function update(now) {
+          var elapsed = now - start;
+          var progress = Math.min(elapsed / duration, 1);
+          var eased = easeOutQuad(progress);
+          var current = Math.floor(eased * target);
+
+          // Format with comma separator
+          el.textContent = current.toLocaleString();
+
+          if (progress < 1) {
+            requestAnimationFrame(update);
+          }
+        }
+        requestAnimationFrame(update);
+      }
+
+      var statsObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting && !statsCounted) {
+            statsCounted = true;
+            statNumbers.forEach(function (el) {
+              var target = parseInt(el.getAttribute('data-target'), 10);
+              animateCounter(el, target, 2000);
+            });
+            statsObserver.disconnect();
+          }
+        });
+      }, {
+        threshold: 0.3
+      });
+
+      statNumbers.forEach(function (el) {
+        statsObserver.observe(el);
+      });
+
+      /* ─── FAQ Accordion ─── */
+      var faqItems = document.querySelectorAll('.faq-item');
+
+      faqItems.forEach(function (item) {
+        var question = item.querySelector('.faq-question');
+        question.addEventListener('click', function () {
+          var isOpen = item.classList.contains('open');
+
+          // Close all others
+          faqItems.forEach(function (other) {
+            if (other !== item && other.classList.contains('open')) {
+              other.classList.remove('open');
+              other.querySelector('.faq-answer').style.maxHeight = '0';
+            }
+          });
+
+          // Toggle current
+          if (isOpen) {
+            item.classList.remove('open');
+            item.querySelector('.faq-answer').style.maxHeight = '0';
+          } else {
+            item.classList.add('open');
+            var answer = item.querySelector('.faq-answer');
+            answer.style.maxHeight = answer.scrollHeight + 'px';
+          }
+        });
+      });
+
+    })();
+  </script>
+
+  <!-- Container Scroll Animation -->
+  <script>
+    (function () {
+      'use strict';
+
+      var container = document.getElementById('hero-scroll');
+      var card = document.getElementById('hero-card');
+      var image = document.getElementById('hero-image');
+      var header = document.getElementById('hero-header');
+      var logoGif = document.getElementById('hero-logo-gif');
+
+      if (!container || !card || !image || !header) return;
+
+      var isMobile = window.innerWidth <= 768;
+      window.addEventListener('resize', function () {
+        isMobile = window.innerWidth <= 768;
+      });
+
+      var ticking = false;
+
+      function updateScroll() {
+        var rect = container.getBoundingClientRect();
+        var containerHeight = rect.height;
+        var scrolled = -rect.top;
+        var progress = Math.max(0, Math.min(1, scrolled / (containerHeight - window.innerHeight)));
+
+        // Card transforms: rotateX 20→0, scale (matches Aceternity ContainerScroll)
+        var rotate = 20 - (20 * progress);
+        var scaleStart = isMobile ? 0.7 : 1.05;
+        var scaleEnd = isMobile ? 0.9 : 1;
+        var scale = scaleStart + (scaleEnd - scaleStart) * progress;
+        var translateY = -100 * progress;
+
+        card.style.transform = 'rotateX(' + rotate + 'deg) scale(' + scale + ') translateY(' + translateY + 'px)';
+
+        // Image fade/blur — starts at 20% progress, settles to subtle backdrop
+        var imageFadeProgress = Math.max(0, Math.min(1, (progress - 0.2) / 0.5));
+        var imageOpacity = 1 - imageFadeProgress * 0.85; // floors at ~0.15
+        var imageBlur = imageFadeProgress * 12;
+        image.style.opacity = imageOpacity;
+        image.style.filter = 'blur(' + imageBlur + 'px)';
+
+        if (logoGif) {
+          // Logo fades out fully
+          var logoOpacity = 1 - imageFadeProgress;
+          logoGif.style.opacity = logoOpacity;
+          logoGif.style.filter = 'blur(' + (imageFadeProgress * 20) + 'px)';
+        }
+
+        // Header reveal — starts at 15% progress, fully visible by 65%
+        var headerProgress = Math.max(0, Math.min(1, (progress - 0.15) / 0.5));
+        header.style.opacity = headerProgress;
+
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          requestAnimationFrame(updateScroll);
+          ticking = true;
+        }
+      }, { passive: true });
+
+      // Set initial state
+      updateScroll();
+    })();
+  </script>
+
+  <!-- Cybernetic Grid Shader -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var container = document.getElementById('cybernetic-grid');
+      if (!container || typeof THREE === 'undefined') return;
+
+      var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      var clock = new THREE.Clock();
+
+      var vertexShader = [
+        'void main() {',
+        '  gl_Position = vec4(position, 1.0);',
+        '}'
+      ].join('\n');
+
+      var fragmentShader = [
+        'precision highp float;',
+        'uniform vec2 iResolution;',
+        'uniform float iTime;',
+        'uniform vec2 iMouse;',
+        '',
+        'float random(vec2 st) {',
+        '  return fract(sin(dot(st.xy, vec2(12.9898, 78.233))) * 43758.5453123);',
+        '}',
+        '',
+        'void main() {',
+        '  vec2 uv = (gl_FragCoord.xy - 0.5 * iResolution.xy) / iResolution.y;',
+        '  vec2 mouse = (iMouse - 0.5 * iResolution.xy) / iResolution.y;',
+        '',
+        '  float t = iTime * 0.2;',
+        '  float mouseDist = length(uv - mouse);',
+        '',
+        '  float warp = sin(mouseDist * 20.0 - t * 4.0) * 0.1;',
+        '  warp *= smoothstep(0.4, 0.0, mouseDist);',
+        '  uv += warp;',
+        '',
+        '  vec2 gridUv = abs(fract(uv * 10.0) - 0.5);',
+        '  float line = pow(1.0 - min(gridUv.x, gridUv.y), 50.0);',
+        '',
+        '  vec3 gridColor = vec3(0.1, 0.5, 1.0);',
+        '  vec3 color = gridColor * line * (0.5 + sin(t * 2.0) * 0.2);',
+        '',
+        '  float energy = sin(uv.x * 20.0 + t * 5.0) * sin(uv.y * 20.0 + t * 3.0);',
+        '  energy = smoothstep(0.8, 1.0, energy);',
+        '  color += vec3(0.4, 0.75, 0.92) * energy * line;',
+        '',
+        '  float glow = smoothstep(0.1, 0.0, mouseDist);',
+        '  color += vec3(1.0) * glow * 0.5;',
+        '',
+        '  color += random(uv + t * 0.1) * 0.05;',
+        '',
+        '  gl_FragColor = vec4(color, 1.0);',
+        '}'
+      ].join('\n');
+
+      var uniforms = {
+        iTime: { value: 0 },
+        iResolution: { value: new THREE.Vector2() },
+        iMouse: {
+          value: (function () {
+            var dpr = window.devicePixelRatio || 1;
+            return new THREE.Vector2(
+              (container.clientWidth / 2) * dpr,
+              (container.clientHeight / 2) * dpr
+            );
+          })()
+        }
+      };
+
+      var material = new THREE.ShaderMaterial({
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        uniforms: uniforms
+      });
+
+      var geometry = new THREE.PlaneGeometry(2, 2);
+      var mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+
+      function onResize() {
+        var w = container.clientWidth;
+        var h = container.clientHeight;
+        var dpr = window.devicePixelRatio || 1;
+        renderer.setSize(w, h);
+        uniforms.iResolution.value.set(w * dpr, h * dpr);
+      }
+      window.addEventListener('resize', onResize);
+      onResize();
+
+      window.addEventListener('mousemove', function (e) {
+        var rect = container.getBoundingClientRect();
+        var dpr = window.devicePixelRatio || 1;
+        uniforms.iMouse.value.set(
+          (e.clientX - rect.left) * dpr,
+          (rect.height - (e.clientY - rect.top)) * dpr
+        );
+      });
+
+      renderer.setAnimationLoop(function () {
+        uniforms.iTime.value = clock.getElapsedTime();
+        renderer.render(scene, camera);
+      });
+    });
+  </script>
+
+  <!-- Background Boxes – Problem Section -->
+  <script>
+    (function () {
+      const grid = document.getElementById('problem-boxes-grid');
+      const section = document.querySelector('.problem');
+      if (!grid || !section) return;
+
+      const ROWS = 25;
+      const COLS = 40;
+      const CELL_COUNT = ROWS * COLS;
+      const COLORS = [
+        'rgba(75, 156, 255, 0.25)',
+        'rgba(75, 156, 255, 0.15)',
+        'rgba(100, 170, 255, 0.2)',
+        'rgba(50, 130, 230, 0.2)',
+        'rgba(120, 180, 255, 0.12)'
+      ];
+
+      // Generate column-based grid (single reflow)
+      const frag = document.createDocumentFragment();
+      for (let i = 0; i < COLS; i++) {
+        const col = document.createElement('div');
+        col.className = 'problem-box-col';
+        for (let j = 0; j < ROWS; j++) {
+          const box = document.createElement('div');
+          box.className = 'problem-box';
+          if (i % 2 === 0 && j % 2 === 0) {
+            box.classList.add('has-plus');
+          }
+          col.appendChild(box);
+        }
+        frag.appendChild(col);
+      }
+      grid.appendChild(frag);
+
+      const boxes = grid.querySelectorAll('.problem-box');
+      let intervalId = null;
+
+      function lightBox(box, color, fadeDelay) {
+        box.classList.add('lit');
+        box.style.backgroundColor = color;
+        setTimeout(function () {
+          box.classList.remove('lit');
+          box.style.backgroundColor = '';
+        }, fadeDelay);
+      }
+
+      function startTwinkle() {
+        if (intervalId) return;
+        intervalId = setInterval(function () {
+          const idx = Math.floor(Math.random() * CELL_COUNT);
+          const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          const fadeDelay = 800 + Math.random() * 1200;
+          lightBox(boxes[idx], color, fadeDelay);
+        }, 80);
+      }
+
+      function stopTwinkle() {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+
+      // IntersectionObserver – start/stop when section enters/leaves viewport
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            startTwinkle();
+          } else {
+            stopTwinkle();
+          }
+        });
+      }, { threshold: 0.1 });
+      observer.observe(section);
+
+      // Hover interactivity via event delegation
+      grid.addEventListener('mouseover', function (e) {
+        if (e.target.classList.contains('problem-box')) {
+          var color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          e.target.classList.add('lit');
+          e.target.style.backgroundColor = color;
+        }
+      });
+
+      grid.addEventListener('mouseout', function (e) {
+        if (e.target.classList.contains('problem-box')) {
+          var box = e.target;
+          setTimeout(function () {
+            box.classList.remove('lit');
+            box.style.backgroundColor = '';
+          }, 600);
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>
