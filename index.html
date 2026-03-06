@@ -7,6 +7,8 @@
   <title>Ultimate Life System — Turn Daily Noise Into Yearly Clarity</title>
   <meta name="description"
     content="A Notion-based operating system that compounds your daily inputs into weekly reviews, monthly plans, and an automatic Year in Review.">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
   <link rel="preconnect" href="https://rsms.me/">
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" defer></script>
@@ -58,6 +60,7 @@
 
     html {
       scroll-behavior: smooth;
+      overflow-x: hidden;
     }
 
     body {
@@ -1386,6 +1389,7 @@
       max-width: var(--container-max);
       margin: 4rem auto 0 auto;
       z-index: 1;
+      overflow: hidden;
     }
 
     .final-cta-visual spline-viewer {
@@ -1402,7 +1406,7 @@
       .final-cta-visual spline-viewer {
         pointer-events: none;
         aspect-ratio: 16 / 12;
-        max-width: 90vw;
+        max-width: 90%;
         transform: scale(0.85);
       }
     }
