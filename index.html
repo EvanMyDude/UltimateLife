@@ -327,6 +327,39 @@
       }
     }
 
+    @media (max-width: 768px) {
+      .hero-scroll-container {
+        height: auto;
+        min-height: 100svh;
+      }
+
+      .hero-scroll-card {
+        height: auto;
+        min-height: 24rem;
+        max-width: 95%;
+      }
+
+      .hero-scroll-inner {
+        padding: 1rem 0;
+      }
+
+      .hero-scroll-header {
+        padding: 1.5rem 1.25rem;
+      }
+
+      .hero-scroll-header h1 {
+        font-size: clamp(2rem, 7vw, 2.75rem);
+      }
+
+      .hero-sub {
+        font-size: 1.05rem;
+      }
+
+      .scroll-indicator {
+        display: none;
+      }
+    }
+
     .float-anim {
       animation: float 6s ease-in-out infinite;
     }
